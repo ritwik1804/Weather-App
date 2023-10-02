@@ -1,0 +1,145 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-parcelize'
+apply plugin: 'kotlin-kapt'
+
+def localProperties = new Properties()
+def localPropertiesFile = rootProject.file('local.properties')
+if (localPropertiesFile.exists()) {
+    localPropertiesFile.withReader('UTF-8') { reader ->
+        localProperties.load(reader)
+    }
+} else {
+    throw new GradleException("local.properties file not found. Create local.properties file in root project.")
+}
+
+if (localProperties['PLACE_API_KEY'] == null) {
+    throw new GradleException("PLACE_API_KEY not found. Define PLACE_API_KEY in the local.properties file.")
+}
+
+android {
+    compileSdkVersion 33
+    defaultConfig {
+        applicationId "com.hoc.weatherapp"
+        minSdkVersion 21
+        targetSdkVersion 33
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        renderscriptTargetApi 21
+    }
+    buildTypes {
+        release {
+            buildConfigField 'String', 'PLACE_API_KEY', '"' + localProperties['PLACE_API_KEY'] + '"'
+
+            shrinkResources true
+            minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+
+        debug {
+            buildConfigField 'String', 'PLACE_API_KEY', '"' + localProperties['PLACE_API_KEY'] + '"'
+
+            shrinkResources false
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+    }
+    kotlinOptions {
+        jvmTarget = "1.8"
+    }
+    buildFeatures {
+        viewBinding true
+    }
+}
+
+tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).all {
+    kotlinOptions.freeCompilerArgs += ["-opt-in=kotlin.RequiresOptIn"]
+}
+
+dependencies {
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+
+    // androidx
+    implementation 'androidx.appcompat:appcompat:1.5.1'
+    implementation 'androidx.gridlayout:gridlayout:1.0.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.preference:preference-ktx:1.2.0'
+    implementation 'androidx.legacy:legacy-preference-v14:1.0.0'
+    implementation 'androidx.palette:palette-ktx:1.0.0'
+    implementation "androidx.startup:startup-runtime:1.1.1"
+
+    implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
+    implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.5.1'
+
+    // google material
+    implementation 'com.google.android.material:material:1.6.1'
+
+    // play services
+    implementation 'com.google.android.gms:play-services-location:20.0.0'
+    implementation 'com.google.android.libraries.places:places:2.6.0'
+
+    // room persistence
+    final roomVersion = '2.4.3'
+    implementation "androidx.room:room-runtime:$roomVersion"
+    kapt "androidx.room:room-compiler:$roomVersion"
+    implementation "androidx.room:room-rxjava2:$roomVersion"
+
+    // work manager
+    final workVersion = '2.7.1'
+    implementation "androidx.work:work-runtime-ktx:$workVersion"
+    implementation "androidx.work:work-rxjava2:$workVersion"
+
+    // mosby
+    final mosbyVersion = '3.1.1'
+    implementation("com.hannesdorfmann.mosby3:mvi:$mosbyVersion")
+
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test:runner:1.4.0'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.4.0'
+
+    // retrofit, moshi
+    implementation 'com.squareup.retrofit2:retrofit:2.9.0'
+    implementation 'com.squareup.retrofit2:converter-moshi:2.9.0'
+    implementation 'com.squareup.retrofit2:adapter-rxjava2:2.9.0'
+    implementation 'com.squareup.okhttp3:logging-interceptor:4.10.0'
+    implementation 'com.squareup.moshi:moshi-kotlin:1.14.0'
+
+    // rxkotlin & rxandroid
+    implementation 'io.reactivex.rxjava2:rxkotlin:2.4.0'
+    implementation 'io.reactivex.rxjava2:rxjava:2.2.21'
+    implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+
+    // rxbinding & threetenabp
+    implementation 'com.jakewharton.rxbinding3:rxbinding:3.1.0'
+    implementation 'com.jakewharton.rxbinding3:rxbinding-swiperefreshlayout:3.1.0'
+    implementation 'com.jakewharton.threetenabp:threetenabp:1.4.2'
+
+    // koin
+    final koinVersion= "3.2.2"
+    implementation "io.insert-koin:koin-core:$koinVersion"
+    implementation "io.insert-koin:koin-android:$koinVersion"
+
+    // view pager indicator
+    implementation 'com.tbuonomo.andrui:viewpagerdotsindicator:4.1.2'
+
+    // glide
+    implementation 'com.github.bumptech.glide:glide:4.14.2'
+    kapt 'com.github.bumptech.glide:compiler:4.14.2'
+
+    // chart & material search view
+    implementation 'com.diogobernardino:williamchart:3.11.0'
+    implementation 'com.diogobernardino.williamchart:tooltip-slider:3.11.0'
+    implementation 'com.miguelcatalan:materialsearchview:1.4.0'
+
+    // rxPermission
+    implementation 'com.github.tbruyelle:rxpermissions:2.x.v0.9.3'
+
+    // ViewBindingDelegate
+    implementation("com.github.hoc081098:ViewBindingDelegate:1.4.0")
+}

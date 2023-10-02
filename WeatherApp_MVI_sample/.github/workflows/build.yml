@@ -1,0 +1,40 @@
+name: Build CI
+
+on:
+  push:
+    branches: [ try_mvi ]
+    paths-ignore: [ '**.md' ]
+  pull_request:
+    branches: [ try_mvi ]
+    paths-ignore: [ '**.md' ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Decode PLACE_API_KEY
+        env:
+          BASEURL: ${{ secrets.PLACE_API_KEY }}
+        run: echo PLACE_API_KEY="$PLACE_API_KEY" > ./local.properties
+
+      - name: Build debug APK
+        uses: gradle/gradle-build-action@v2
+        with:
+          arguments: assembleDebug --warning-mode all --stacktrace
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: app-debug
+          path: app/build/outputs/apk/debug/app-debug.apk

@@ -1,0 +1,40 @@
+name: spotless
+on:
+  push:
+    branches: [ try_mvi ]
+    paths-ignore: [ '**.md' ]
+
+jobs:
+  spotless-check:
+    name: Spotless check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out
+        uses: actions/checkout@v3
+
+      - name: Setup Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+
+      - name: Cache gradle, wrapper and buildSrc
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-spotless-${{ hashFiles('**/*.gradle*') }}-${{ hashFiles('**/gradle/wrapper/gradle-wrapper.properties') }}-${{ hashFiles('**/buildSrc/**/*.kt') }}
+          restore-keys: |
+            ${{ runner.os }}-spotless-
+
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
+
+      - name: Decode PLACE_API_KEY
+        env:
+          BASEURL: ${{ secrets.PLACE_API_KEY }}
+        run: echo PLACE_API_KEY="$PLACE_API_KEY" > ./local.properties
+
+      - name: Spotless check
+        run: ./gradlew spotlessCheck
